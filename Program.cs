@@ -11,6 +11,7 @@ class Program
       
         Console.WriteLine(calc.input("2 + 2 * 2.5 / 2"));
         Console.WriteLine(calc.input("2 * 3 ^ 2"));
+        Console.WriteLine(calc.input("(2 + 2) ^ 0 / 2"));
         
 
        
