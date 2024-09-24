@@ -6,7 +6,7 @@ namespace Calc
 {
     public class Calculator
     {
-        public double input(string equation)
+        public decimal input(string equation)
         {
             // Handle parentheses recursively
             while (equation.Contains("("))
@@ -18,7 +18,7 @@ namespace Calc
                     // Get the expression inside the parentheses
                     string innerExpression = match.Groups[1].Value;
                     // Recursively evaluate the expression inside
-                    double result = input(innerExpression);
+                    decimal result = input(innerExpression);
                     // Replace the parentheses with the result in the original equation
                     equation = equation.Replace($"({innerExpression})", result.ToString());
                 }
@@ -27,20 +27,25 @@ namespace Calc
             return ProcessEquation(equation);
         }
 
-        private double ProcessEquation(string equation)
+        private decimal ProcessEquation(string equation)
         {
-            string[] expandEquation = equation.Split(' ');
-            List<string> processedEquation = new List<string>(expandEquation);
+            // Regex to match numbers (including negatives), operators, and handle parentheses
+            var tokens = Regex.Matches(equation, @"-?\d+(\.\d+)?|[-+*/^()]")
+                              .Cast<Match>()
+                              .Select(m => m.Value)
+                              .ToArray();
+
+            List<string> processedEquation = new List<string>(tokens);
 
             // Initialize calculator operations
             Dictionary<string, Calculator> calculator = new Dictionary<string, Calculator>
-            {
-                { "^", new Pow() },
-                { "*", new Multiply() },
-                { "/", new Divide() },
-                { "+", new Add() },
-                { "-", new Subtract() }
-            };
+    {
+        { "^", new Pow() },
+        { "*", new Multiply() },
+        { "/", new Divide() },
+        { "+", new Add() },
+        { "-", new Subtract() }
+    };
 
             // Handle powers
             for (int i = 0; i < processedEquation.Count; i++)
@@ -48,9 +53,9 @@ namespace Calc
                 string current = processedEquation[i];
                 if (current == "^")
                 {
-                    double left = double.Parse(processedEquation[i - 1]);
-                    double right = double.Parse(processedEquation[i + 1]);
-                    double result = calculator[current].Opp(left, right);
+                    decimal left = decimal.Parse(processedEquation[i - 1]);
+                    decimal right = decimal.Parse(processedEquation[i + 1]);
+                    decimal result = calculator[current].Opp(left, right);
 
                     processedEquation[i - 1] = result.ToString();
                     processedEquation.RemoveAt(i);
@@ -65,9 +70,9 @@ namespace Calc
                 string current = processedEquation[i];
                 if (current == "*" || current == "/")
                 {
-                    double left = double.Parse(processedEquation[i - 1]);
-                    double right = double.Parse(processedEquation[i + 1]);
-                    double result = calculator[current].Opp(left, right);
+                    decimal left = decimal.Parse(processedEquation[i - 1]);
+                    decimal right = decimal.Parse(processedEquation[i + 1]);
+                    decimal result = calculator[current].Opp(left, right);
 
                     processedEquation[i - 1] = result.ToString();
                     processedEquation.RemoveAt(i);
@@ -77,26 +82,27 @@ namespace Calc
             }
 
             // Handle addition and subtraction
-            double finalResult = double.Parse(processedEquation[0]);
+            decimal finalResult = decimal.Parse(processedEquation[0]);
             for (int i = 1; i < processedEquation.Count; i += 2)
             {
                 string current = processedEquation[i];
-                double right = double.Parse(processedEquation[i + 1]);
+                decimal right = decimal.Parse(processedEquation[i + 1]);
                 finalResult = calculator[current].Opp(finalResult, right);
             }
 
             return finalResult;
         }
 
-        protected virtual double Opp(double x, double y)
+
+        protected virtual decimal Opp(decimal x, decimal y)
         {
-            return 0.0;
+            return 0.0m;
         }
     }
 
     internal class Add : Calculator
     {
-        protected override double Opp(double x, double y)
+        protected override decimal Opp(decimal x, decimal y)
         {
             return x + y;
         }
@@ -104,7 +110,7 @@ namespace Calc
 
     internal class Subtract : Calculator
     {
-        protected override double Opp(double x, double y)
+        protected override decimal Opp(decimal x, decimal y)
         {
             return x - y;
         }
@@ -112,7 +118,7 @@ namespace Calc
 
     internal class Multiply : Calculator
     {
-        protected override double Opp(double x, double y)
+        protected override decimal Opp(decimal x, decimal y)
         {
             return x * y;
         }
@@ -120,7 +126,7 @@ namespace Calc
 
     internal class Divide : Calculator
     {
-        protected override double Opp(double x, double y)
+        protected override decimal Opp(decimal x, decimal y)
         {
             return x / y;
         }
@@ -128,9 +134,10 @@ namespace Calc
 
     internal class Pow : Calculator
     {
-        protected override double Opp(double x, double y)
-        {
-            return Math.Pow(x, y);
+        protected override decimal Opp(decimal x, decimal y)
+        {   
+            
+            return (decimal)Math.Pow((double)x, (double)y);
         }
     }
 }
