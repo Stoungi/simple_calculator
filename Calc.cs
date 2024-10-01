@@ -8,23 +8,30 @@ namespace Calc
     {
         public decimal input(string equation)
         {
-            // Handle parentheses recursively
-            while (equation.Contains("("))
-            {
-                // Find innermost parentheses using regex
-                Match match = Regex.Match(equation, @"\(([^()]+)\)");
-                if (match.Success)
+           try
                 {
-                    // Get the expression inside the parentheses
-                    string innerExpression = match.Groups[1].Value;
-                    // Recursively evaluate the expression inside
-                    decimal result = input(innerExpression);
-                    // Replace the parentheses with the result in the original equation
-                    equation = equation.Replace($"({innerExpression})", result.ToString());
+                    // Handle parentheses recursively
+                    while (equation.Contains("("))
+                    {
+                        // Find innermost parentheses using regex
+                        Match match = Regex.Match(equation, @"\(([^()]+)\)");
+                        if (match.Success)
+                        {
+                            // Get the expression inside the parentheses
+                            string innerExpression = match.Groups[1].Value;
+                            // Recursively evaluate the expression inside
+                            decimal result = Decimal.Parse(input(innerExpression));
+                            // Replace the parentheses with the result in the original equation
+                            equation = equation.Replace($"({innerExpression})", result.ToString());
+                        }
+                    }
+                    // Now process the equation without parentheses
+                    return ProcessEquation(equation).ToString("G");
                 }
-            }
-            // Now process the equation without parentheses
-            return ProcessEquation(equation);
+                catch (Exception ex)
+                {
+                    return "syntx err";
+                }    
         }
 
         private decimal ProcessEquation(string equation)
